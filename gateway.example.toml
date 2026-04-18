@@ -1,0 +1,16 @@
+[server]
+bind = "127.0.0.1:8787"
+max_body_bytes = 10485760
+request_timeout_ms = 30000
+
+[[routes]]
+name = "jira"
+prefix = "/jira"
+upstream = "https://jira.internal.example.com"
+strip_prefix = true
+
+[[routes]]
+name = "slack"
+prefix = "/slack"
+upstream = "https://slack.internal.example.com/api"
+strip_prefix = true

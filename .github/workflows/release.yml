@@ -1,0 +1,36 @@
+name: release
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        env:
+          ITADORI_UPDATE_REPO: ${{ github.repository }}
+        run: cargo build --release --locked
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          cp target/release/itadori dist/itadori-linux-x86_64
+          tar -C dist -czf dist/itadori-linux-x86_64.tar.gz itadori-linux-x86_64
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/itadori-linux-x86_64.tar.gz
