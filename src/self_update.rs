@@ -305,3 +305,51 @@ fn default_asset_name() -> String {
 fn normalize_version(version: &str) -> &str {
     version.trim().trim_start_matches('v')
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validates_repo_format() {
+        assert!(validate_repo("owner/repo").is_ok());
+        assert!(validate_repo("owner").is_err());
+        assert!(validate_repo("owner/repo/extra").is_err());
+        assert!(validate_repo("/repo").is_err());
+        assert!(validate_repo("owner/").is_err());
+    }
+
+    #[test]
+    fn normalizes_release_versions() {
+        assert_eq!(normalize_version("v1.2.3"), "1.2.3");
+        assert_eq!(normalize_version("  v1.2.3  "), "1.2.3");
+        assert_eq!(normalize_version("1.2.3"), "1.2.3");
+    }
+
+    #[test]
+    fn default_asset_name_matches_release_workflow() {
+        assert_eq!(
+            default_asset_name(),
+            format!(
+                "itadori-{}-{}.tar.gz",
+                std::env::consts::OS,
+                std::env::consts::ARCH
+            )
+        );
+    }
+
+    #[test]
+    fn replaces_current_exe_with_candidate() {
+        let dir = tempfile::tempdir().unwrap();
+        let current = dir.path().join("itadori");
+        let candidate = dir.path().join("itadori-new-download");
+
+        fs::write(&current, "old").unwrap();
+        fs::write(&candidate, "new").unwrap();
+
+        replace_current_exe(&candidate, &current).unwrap();
+
+        assert_eq!(fs::read_to_string(&current).unwrap(), "new");
+        assert!(!current.with_extension("itadori-old").exists());
+    }
+}
