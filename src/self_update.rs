@@ -25,7 +25,7 @@ struct GitHubRelease {
 #[derive(Debug, Deserialize)]
 struct GitHubAsset {
     name: String,
-    browser_download_url: String,
+    url: String,
 }
 
 pub async fn run(options: SelfUpdateOptions) -> Result<()> {
@@ -186,7 +186,8 @@ async fn download_asset(
     token: Option<&str>,
     destination: &Path,
 ) -> Result<()> {
-    let response = github_request(client.get(&asset.browser_download_url), token)
+    let response = github_request(client.get(&asset.url), token)
+        .header(ACCEPT, "application/octet-stream")
         .send()
         .await
         .with_context(|| format!("failed to download {}", asset.name))?;
