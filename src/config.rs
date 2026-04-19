@@ -74,7 +74,7 @@ impl GatewayConfig {
             }
         }
         self.routes
-            .sort_by(|a, b| b.prefix.len().cmp(&a.prefix.len()));
+            .sort_by_key(|route| std::cmp::Reverse(route.prefix.len()));
         Ok(())
     }
 
